@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,10 +18,14 @@ import com.google.common.base.Strings;
 
 public class Exporter {
 
+    private final static Logger LOGGER = Logger.getLogger(Exporter.class
+            .getName());
+
     private static final String DEFAULT_REPORTER = "marcus.demnert";
 
-    private static final String[] JIRA_HEADERS = new String[] { "IssueType",
-            "Epic Name", "Summary", "Description", "Epic Link", "Reporter" };
+    private static final String[] JIRA_HEADERS = new String[] { "Counter",
+            "IssueType", "Epic Name", "Summary", "Description", "Epic Link",
+            "Reporter" };
 
     private Map<String, Epic> epicMap;
     private Epic NO_STORY_EPIC = new Epic("No Theme Area");
@@ -49,14 +55,6 @@ public class Exporter {
                 sb.append(arr[i].toUpperCase()).append(" ");
             }
             else {
-                try {
-                    arr[i].charAt(0);
-                }
-                catch (StringIndexOutOfBoundsException e) {
-                    System.out.println("Given string: '" + value + "'");
-                    System.out.println("Arr: " + arr[i]);
-                    System.out.println(i);
-                }
                 sb.append(Character.toUpperCase(arr[i].charAt(0)))
                         .append(arr[i].substring(1)).append(" ");
             }
@@ -75,15 +73,16 @@ public class Exporter {
     private void printFile(String fileName) throws FileNotFoundException {
         PrintWriter pw = new PrintWriter(fileName);
         pw.println(Joiner.on(",").join(JIRA_HEADERS));
-
+        int counter = 1;
         for (Epic epic : epicMap.values()) {
-            String[] epicFields = new String[] { "Epic",
-                    ampersandify(epic.getName()), ampersandify(epic.getName()),
-                    "", "", DEFAULT_REPORTER };
+            String[] epicFields = new String[] { String.valueOf(counter++),
+                    "Epic", ampersandify(epic.getName()),
+                    ampersandify(epic.getName()), "", "", DEFAULT_REPORTER };
             pw.println(Joiner.on(",").join(epicFields));
 
             for (Story story : epic.getStories()) {
-                String[] storyFields = new String[] { "Story", "",
+                String[] storyFields = new String[] {
+                        String.valueOf(counter++), "Story", "",
                         ampersandify(story.getSummary()),
                         ampersandify(story.getDescription()),
                         ampersandify(epic.getName()), DEFAULT_REPORTER };
@@ -128,11 +127,20 @@ public class Exporter {
 
                 if (row == null)
                     continue;
-
-                Epic epic = getEpic(row, sheetConfig);
-                Story story = getStory(row, sheetConfig);
-                if (story != null) {
-                    epic.addStory(story);
+                try {
+                    Epic epic = getEpic(row, sheetConfig);
+                    Story story = getStory(row, sheetConfig);
+                    if (story != null) {
+                        epic.addStory(story);
+                    }
+                }
+                catch (IllegalStateException e) {
+                    LOGGER.severe("Issue found in sheet: "
+                            + sheet.getSheetName() + " on row "
+                            + String.valueOf(row.getRowNum() + 1)
+                            + ", using sheet configuration "
+                            + sheetConfig);
+                    throw e;
                 }
             }
         }
@@ -147,7 +155,8 @@ public class Exporter {
      *            the sheet configuration to use.
      * @return the parsed epic or the default epic if no epic was found.
      */
-    private Epic getEpic(Row row, SheetConfiguration sheetConfig) {
+    private Epic getEpic(Row row, SheetConfiguration sheetConfig)
+            throws IllegalStateException {
         Cell cell = row.getCell(sheetConfig.THEME_COL);
         String value = getCellValue(cell);
         if (!Strings.isNullOrEmpty(value)) {
@@ -190,11 +199,30 @@ public class Exporter {
      *            the Excel cell to get the value from.
      * @return the string value of the cell or null if empty.
      */
-    private String getCellValue(Cell cell) {
+    private String getCellValue(Cell cell) throws IllegalStateException {
         if (cell != null) {
-            String value = cell.getStringCellValue();
-            if (!Strings.isNullOrEmpty(value)) {
-                return value;
+            try {
+                String value = cell.getStringCellValue();
+                if (!Strings.isNullOrEmpty(value)) {
+                    return value;
+                }
+            }
+            catch (IllegalStateException e) {
+                String type = "UNKNOWN";
+                String value = "UNKNOWN";
+
+                switch (cell.getCellType()) {
+                    case Cell.CELL_TYPE_NUMERIC:
+                        type = "NUMERIC";
+                        value = String.valueOf(cell.getNumericCellValue());
+                        break;
+                }
+
+                String msg = String.format(
+                        "Could not parse the contents of cell. "
+                                + "Cell type is %s, value is %s", type, value);
+                LOGGER.severe(msg);
+                throw e;
             }
         }
         return null;

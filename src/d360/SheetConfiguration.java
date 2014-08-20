@@ -30,9 +30,9 @@ public class SheetConfiguration {
 
         sheetConfiguration.put("Validation", new SheetConfiguration(
                 DEFAULT_START_ROW, DEFAULT_THEME_COL, DEFAULT_SUMMARY_COL, 8));
-        sheetConfiguration.put("Shopping",
-                new SheetConfiguration(4, DEFAULT_THEME_COL,
-                        DEFAULT_SUMMARY_COL, DEFAULT_DESCRIPTION_COL));
+        sheetConfiguration.put("Shopping", new SheetConfiguration(4,
+                DEFAULT_THEME_COL + 1, DEFAULT_SUMMARY_COL + 1,
+                DEFAULT_DESCRIPTION_COL + 1));
         sheetConfiguration.put("Awareness", offByOne);
         sheetConfiguration.put("Exploration", offByOne);
         sheetConfiguration.put("Uncategorized", offByOne);
@@ -51,4 +51,21 @@ public class SheetConfiguration {
             return sheetConfiguration.get(sheetName);
         return DEFAULT;
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("SheetConfiguration [START_ROW=").append(START_ROW)
+                .append(", THEME_COL=").append(THEME_COL)
+                .append(", SUMMARY_COL=").append(SUMMARY_COL)
+                .append(", DESCRIPTION_COL=").append(DESCRIPTION_COL)
+                .append("]");
+        return builder.toString();
+    }
+
 }
