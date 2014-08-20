@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -27,7 +26,7 @@ public class Exporter {
             "IssueType", "Epic Name", "Summary", "Description", "Epic Link",
             "Reporter" };
 
-    private Map<String, Epic> epicMap;
+    protected Map<String, Epic> epicMap;
     private Epic NO_STORY_EPIC = new Epic("No Theme Area");
 
     /**
@@ -46,7 +45,7 @@ public class Exporter {
      *            the value to prettify.
      * @return the prettified value.
      */
-    private String toTitleCase(String value) {
+    protected String toTitleCase(String value) {
         String[] arr = value.trim().split(" ");
         StringBuffer sb = new StringBuffer();
 
@@ -70,7 +69,7 @@ public class Exporter {
      * @throws FileNotFoundException
      *             if the file could not be created.
      */
-    private void printFile(String fileName) throws FileNotFoundException {
+    protected void printFile(String fileName) throws FileNotFoundException {
         PrintWriter pw = new PrintWriter(fileName);
         pw.println(Joiner.on(",").join(JIRA_HEADERS));
         int counter = 1;
@@ -100,7 +99,7 @@ public class Exporter {
      *            the string value to be surrounded by ampersands.
      * @return the given string surrounded with ampersands.
      */
-    private String ampersandify(String value) {
+    protected String ampersandify(String value) {
         if (value == null) {
             value = "";
         }
@@ -138,8 +137,7 @@ public class Exporter {
                     LOGGER.severe("Issue found in sheet: "
                             + sheet.getSheetName() + " on row "
                             + String.valueOf(row.getRowNum() + 1)
-                            + ", using sheet configuration "
-                            + sheetConfig);
+                            + ", using sheet configuration " + sheetConfig);
                     throw e;
                 }
             }
@@ -199,7 +197,7 @@ public class Exporter {
      *            the Excel cell to get the value from.
      * @return the string value of the cell or null if empty.
      */
-    private String getCellValue(Cell cell) throws IllegalStateException {
+    protected String getCellValue(Cell cell) throws IllegalStateException {
         if (cell != null) {
             try {
                 String value = cell.getStringCellValue();
