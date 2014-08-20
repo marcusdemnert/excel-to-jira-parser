@@ -7,6 +7,10 @@ public class Epic {
     private final String name;
     private List<Story> stories = new ArrayList<Story>();
 
+    private String component;
+
+    private String deliveryPackage;
+
     public Epic(String name) {
         this.name = name;
     }
@@ -38,4 +42,48 @@ public class Epic {
     public List<Story> getStories() {
         return stories;
     }
+
+    /**
+     * @return the component
+     */
+    public String getComponent() {
+        return component;
+    }
+
+    /**
+     * @param component
+     *            the component to set
+     */
+    public void setComponent(String component) {
+        this.component = component;
+    }
+
+    /**
+     * @return the deliveryPackage
+     */
+    public String getDeliveryPackage() {
+        return deliveryPackage;
+    }
+
+    /**
+     * @param deliveryPackage
+     *            the deliveryPackage to set
+     */
+    public void setDeliveryPackage(String deliveryPackage) {
+        this.deliveryPackage = deliveryPackage;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Epic [name=").append(name).append(", stories=")
+                .append(stories).append(", component=").append(component)
+                .append(", deliveryPackage=").append(deliveryPackage)
+                .append("]");
+        return builder.toString();
+    }
+
 }

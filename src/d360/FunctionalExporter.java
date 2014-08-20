@@ -20,15 +20,14 @@ public class FunctionalExporter extends Exporter {
     private static final int START_ROW = 2;
     private static final int FUNCTIONAL_AREA_COL = 2;
     private static final int FUNCTION_COL = 3;
-
-    private Epic EMPTY_EPIC = new Epic("No Functional Area");
+    private static final int DELIVERY_PACKAGE_COL = 0;
+    private static final String DELIVERT_PACKAGE_PREFIX = "Delivery Package ";
 
     /**
      * Constructor. Creates a new <code>Exporter</code> instance.
      */
     public FunctionalExporter() {
         epicMap = new HashMap<String, Epic>();
-        epicMap.put("Empty Epic", EMPTY_EPIC);
     }
 
     /**
@@ -49,11 +48,31 @@ public class FunctionalExporter extends Exporter {
             if (row == null)
                 continue;
             try {
-                Epic epic = getEpic(row);
-                Story story = getStory(row);
-                if (story != null) {
-                    epic.addStory(story);
+                String functionName = getCellValue(row, FUNCTION_COL);
+                if (Strings.isNullOrEmpty(functionName)) {
+                    throw new RuntimeException("Function on row "
+                            + String.valueOf(row.getRowNum() + 1) + " missing");
                 }
+                Epic epic = new Epic(functionName);
+                epicMap.put(functionName, epic);
+
+                // Get the delivery package value.
+                String deliveryPackage = getCellValue(row, DELIVERY_PACKAGE_COL);
+                if (Strings.isNullOrEmpty(deliveryPackage)) {
+                    throw new RuntimeException("Delivery package on row "
+                            + String.valueOf(row.getRowNum() + 1) + " missing");
+                }
+                epic.setDeliveryPackage(DELIVERT_PACKAGE_PREFIX
+                        + deliveryPackage);
+
+                // Get the functional area.
+                String functionalArea = getCellValue(row, FUNCTIONAL_AREA_COL);
+                if (Strings.isNullOrEmpty(deliveryPackage)) {
+                    throw new RuntimeException("Functional area on row "
+                            + String.valueOf(row.getRowNum() + 1) + " missing");
+                }
+                epic.setComponent(functionalArea);
+                System.out.println( epic);
             }
             catch (IllegalStateException e) {
                 LOGGER.severe("Issue found in sheet: " + sheet.getSheetName()
@@ -64,41 +83,19 @@ public class FunctionalExporter extends Exporter {
     }
 
     /**
-     * Gets the epic for the given row.
      * 
      * @param row
-     *            the row to get the epic from.
-     * @return the parsed epic or the default epic if no epic was found.
+     * @param column
+     * @return
      */
-    private Epic getEpic(Row row) throws IllegalStateException {
-        Cell cell = row.getCell(FUNCTIONAL_AREA_COL);
-        String value = getCellValue(cell);
-        if (!Strings.isNullOrEmpty(value)) {
-            String pretty = toTitleCase(value);
-            Epic epic = epicMap.get(pretty);
-            if (epic == null) {
-                epic = new Epic(pretty);
-                epicMap.put(pretty, epic);
-            }
-            return epic;
+    private String getCellValue(Row row, int column) {
+        String value = null;
+        Cell cell = row.getCell(column);
+        String cellValue = getCellValue(cell);
+        if (!Strings.isNullOrEmpty(cellValue)) {
+            value = toTitleCase(cellValue);
         }
-        return EMPTY_EPIC;
-    }
-
-    /**
-     * Gets the story for the given row.
-     * 
-     * @param row
-     *            the row to get the story from.
-     * @return the parsed story or the default epic if no epic was found.
-     */
-    private Story getStory(Row row) {
-        Story story = null;
-        String summary = getCellValue(row.getCell(FUNCTION_COL));
-        if (!Strings.isNullOrEmpty(summary)) {
-            story = new Story(summary, null);
-        }
-        return story;
+        return value;
     }
 
     /**

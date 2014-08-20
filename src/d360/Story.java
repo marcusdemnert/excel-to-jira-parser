@@ -4,6 +4,8 @@ public class Story {
     private String summary;
     private String description;
 
+    private Component component;
+
     public Story(String summary, String description) {
         this.summary = summary;
         this.description = description;
@@ -25,6 +27,14 @@ public class Story {
      */
     public String getDescription() {
         return description;
+    }
+
+    public void setComponent(Component component) {
+        this.component = component;
+    }
+
+    public Component getComponent() {
+        return component;
     }
 
 }

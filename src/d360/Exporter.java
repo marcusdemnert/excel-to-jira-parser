@@ -22,9 +22,10 @@ public class Exporter {
 
     private static final String DEFAULT_REPORTER = "marcus.demnert";
 
-    private static final String[] JIRA_HEADERS = new String[] { "Counter",
+    private static final String[] JIRA_HEADERS = new String[] {
             "IssueType", "Epic Name", "Summary", "Description", "Epic Link",
-            "Reporter" };
+            "Functional Area", "Delivery Package", "Reporter"
+    };
 
     protected Map<String, Epic> epicMap;
     private Epic NO_STORY_EPIC = new Epic("No Theme Area");
@@ -72,24 +73,58 @@ public class Exporter {
     protected void printFile(String fileName) throws FileNotFoundException {
         PrintWriter pw = new PrintWriter(fileName);
         pw.println(Joiner.on(",").join(JIRA_HEADERS));
-        int counter = 1;
+
         for (Epic epic : epicMap.values()) {
-            String[] epicFields = new String[] { String.valueOf(counter++),
-                    "Epic", ampersandify(epic.getName()),
-                    ampersandify(epic.getName()), "", "", DEFAULT_REPORTER };
-            pw.println(Joiner.on(",").join(epicFields));
+            printEpic(epic, pw);
 
             for (Story story : epic.getStories()) {
-                String[] storyFields = new String[] {
-                        String.valueOf(counter++), "Story", "",
-                        ampersandify(story.getSummary()),
-                        ampersandify(story.getDescription()),
-                        ampersandify(epic.getName()), DEFAULT_REPORTER };
-                pw.println(Joiner.on(",").join(storyFields));
+                printStory(story, epic, pw);
             }
         }
 
         pw.close();
+    }
+
+    /**
+     * 
+     * @param epic
+     * @param pw
+     */
+    protected void printEpic(Epic epic, PrintWriter pw) {
+        String[] epicFields = new String[] {
+                "Epic", // Issue Type
+                ampersandify(epic.getName()), // Epic Name
+                ampersandify(epic.getName()), // Summary
+                "", // Description
+                "", // Epic Link
+                ampersandify(epic.getComponent()), // Functional Area
+                ampersandify(epic.getDeliveryPackage()), // Delivery Package
+                DEFAULT_REPORTER
+        };
+        pw.println(Joiner.on(",").join(epicFields));
+    }
+
+    /**
+     * 
+     * @param story
+     * @param epic
+     * @param pw
+     */
+    protected void printStory(Story story, Epic epic, PrintWriter pw) {
+        String[] storyFields = new String[] {
+                "Story", // Issue Type
+                "", // Epic Name
+                ampersandify(story.getSummary()), // Summary
+                ampersandify(story.getDescription()), // Description
+                ampersandify(epic.getName()), // Epic Link
+                (story.getComponent() != null ? ampersandify(story
+                        .getComponent().getName()) : ""), // Functional
+                                                          // Area
+                "", // Delivery Package
+                DEFAULT_REPORTER
+        };
+        pw.println(Joiner.on(",").join(storyFields));
+
     }
 
     /**
@@ -197,30 +232,38 @@ public class Exporter {
      *            the Excel cell to get the value from.
      * @return the string value of the cell or null if empty.
      */
-    protected String getCellValue(Cell cell) throws IllegalStateException {
+    protected String getCellValue(Cell cell) {
+        return getCellValue(cell, true);
+    }
+
+    protected String getCellValue(Cell cell, boolean forceIntegerIfNumberic)
+            throws IllegalStateException {
         if (cell != null) {
-            try {
-                String value = cell.getStringCellValue();
-                if (!Strings.isNullOrEmpty(value)) {
-                    return value;
-                }
+            String value = "";
+
+            switch (cell.getCellType()) {
+                case Cell.CELL_TYPE_NUMERIC:
+                    double numericValue = cell.getNumericCellValue();
+                    if (forceIntegerIfNumberic) {
+                        value = Integer.toString((int) Math.floor(cell
+                                .getNumericCellValue()));
+                    }
+                    else {
+                        value = String.valueOf(numericValue);
+                    }
+                    break;
+                case Cell.CELL_TYPE_STRING:
+                    value = cell.getStringCellValue();
+                    break;
+                case Cell.CELL_TYPE_BLANK:
+                    value = null;
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            "Cell value of unknown type: " + cell.getCellType());
             }
-            catch (IllegalStateException e) {
-                String type = "UNKNOWN";
-                String value = "UNKNOWN";
-
-                switch (cell.getCellType()) {
-                    case Cell.CELL_TYPE_NUMERIC:
-                        type = "NUMERIC";
-                        value = String.valueOf(cell.getNumericCellValue());
-                        break;
-                }
-
-                String msg = String.format(
-                        "Could not parse the contents of cell. "
-                                + "Cell type is %s, value is %s", type, value);
-                LOGGER.severe(msg);
-                throw e;
+            if (!Strings.isNullOrEmpty(value)) {
+                return value;
             }
         }
         return null;
