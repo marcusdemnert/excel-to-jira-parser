@@ -1,0 +1,12 @@
+{
+  "date.import.format" : "dd/MMM/yy h:mm a",
+  "field.Epic Link" : "customfield_10007",
+  "field.Reporter" : "reporter",
+  "project.name" : "D360 Test",
+  "field.IssueType" : "issuetype",
+  "field.Epic Name" : "customfield_10008",
+  "field.Issue ID" : "issue-id",
+  "project.key" : "DT",
+  "mapfromcsv" : "false",
+  "field.Summary" : "summary"
+}
