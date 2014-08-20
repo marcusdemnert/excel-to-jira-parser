@@ -5,6 +5,11 @@ import java.util.Map;
 
 public class SheetConfiguration {
 
+    public int START_ROW;
+    public int THEME_COL;
+    public int SUMMARY_COL;
+    public int DESCRIPTION_COL;
+
     final static int DEFAULT_START_ROW = 1;
     final static int DEFAULT_THEME_COL = 0;
     final static int DEFAULT_SUMMARY_COL = 2;
@@ -31,12 +36,7 @@ public class SheetConfiguration {
         sheetConfiguration.put("Uncategorized", offByOne);
     }
 
-    int START_ROW;
-    int THEME_COL;
-    int SUMMARY_COL;
-    int DESCRIPTION_COL;
-
-    public SheetConfiguration(int startRow, int themeCol, int summaryCol,
+    private SheetConfiguration(int startRow, int themeCol, int summaryCol,
             int descriptionCol) {
         START_ROW = startRow;
         THEME_COL = themeCol;
