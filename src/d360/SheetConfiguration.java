@@ -10,18 +10,20 @@ public class SheetConfiguration {
     public int SUMMARY_COL;
     public int DESCRIPTION_COL;
 
-    final static int DEFAULT_START_ROW = 1;
-    final static int DEFAULT_THEME_COL = 0;
-    final static int DEFAULT_SUMMARY_COL = 2;
-    final static int DEFAULT_DESCRIPTION_COL = 9;
+    private final static int DEFAULT_START_ROW = 1;
+    private final static int DEFAULT_THEME_COL = 0;
+    private final static int DEFAULT_SUMMARY_COL = 2;
+    private final static int DEFAULT_DESCRIPTION_COL = 9;
 
-    static SheetConfiguration DEFAULT = new SheetConfiguration(
+    private static SheetConfiguration DEFAULT = new SheetConfiguration(
             DEFAULT_START_ROW, DEFAULT_THEME_COL, DEFAULT_SUMMARY_COL,
             DEFAULT_DESCRIPTION_COL);
 
-    static Map<String, SheetConfiguration> sheetConfiguration = new HashMap<String, SheetConfiguration>();
+    private static Map<String, SheetConfiguration> sheetConfiguration;
 
     static {
+        sheetConfiguration = new HashMap<String, SheetConfiguration>();
+
         SheetConfiguration offByOne = new SheetConfiguration(DEFAULT_START_ROW,
                 DEFAULT_THEME_COL + 1, DEFAULT_SUMMARY_COL + 1,
                 DEFAULT_DESCRIPTION_COL + 1);
