@@ -292,7 +292,7 @@ public abstract class ExcelExporter {
     protected static void export(ExcelExporter exporter) {
         try {
             Workbook book = new XSSFWorkbook(
-                    FunctionalExporter.class.getResourceAsStream(exporter
+                    ExcelExporter.class.getResourceAsStream(exporter
                             .getInputFileName()));
 
             Configurator configurator = exporter.getConfigurator();
