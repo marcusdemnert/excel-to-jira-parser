@@ -179,13 +179,15 @@ public abstract class ExcelExporter {
         Table<Integer, String, String> data = TreeBasedTable.create();
         int rowCount = 0;
 
-        LOGGER.info("Using configurator: " + c);
+        LOGGER.info("Parsing the Excel Workbook using " + c);
 
         for (SheetConfig sheetConfig : c.getSheets()) {
             Map<RowConfig, Map<FieldConfig, String>> cache = new HashMap<RowConfig, Map<FieldConfig, String>>();
 
-            LOGGER.info("Looking at sheet: " + sheetConfig);
             Sheet sheet = getSheet(book, sheetConfig);
+
+            LOGGER.info("Parsing sheet '" + sheet.getSheetName()
+                    + "' using " + sheetConfig);
 
             for (RowConfig rowConfig : sheetConfig.getRows()) {
                 for (int rowNo = sheetConfig.getStartRow(); rowNo < sheet
@@ -285,7 +287,9 @@ public abstract class ExcelExporter {
                 throw new RuntimeException(
                         "Data expectancy error: The cell on row "
                                 + (row.getRowNum() + 1) + " and column "
-                                + (config.getColumn() + 1) + " is empty.");
+                                + (config.getColumn() + 1)
+                                + " is empty. Column name is '"
+                                + config.getLabel() + "'");
             }
             else {
                 return "";
@@ -294,20 +298,21 @@ public abstract class ExcelExporter {
 
         // Gets the cell value.
         String value = getCellValue(cell, config.isForceIntegerOnNumberFields());
+        if (!Strings.isNullOrEmpty(value)) {
 
-        // Prettify the text if it has been set.
-        if (config.isPretty()) {
-            value = toTitleCase(value);
+            // Prettify the text if it has been set.
+            if (config.isPretty()) {
+                value = toTitleCase(value);
+            }
+
+            // Append the output prefix if it has been set.
+            if (!Strings.isNullOrEmpty(config.getOutputPrefix())) {
+                value = config.getOutputPrefix() + value;
+            }
+
+            // Remove all whitespace characters (tabs, linebreaks etc).
+            value = CharMatcher.JAVA_ISO_CONTROL.removeFrom(value);
         }
-
-        // Append the output prefix if it has been set.
-        if (!Strings.isNullOrEmpty(config.getOutputPrefix())) {
-            value = config.getOutputPrefix() + value;
-        }
-
-        // Remove all whitespace characters (tabs, linebreaks etc).
-        value = CharMatcher.JAVA_ISO_CONTROL.removeFrom(value);
-
         return value;
     }
 
@@ -347,6 +352,10 @@ public abstract class ExcelExporter {
         return value == null ? "" : value;
     }
 
+    /**
+     * 
+     * @param exporter
+     */
     protected static void export(ExcelExporter exporter) {
         try {
             Workbook book = new XSSFWorkbook(

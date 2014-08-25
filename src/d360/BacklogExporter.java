@@ -35,7 +35,7 @@ public class BacklogExporter extends ExcelExporter {
                         .setColumn(3).build();
 
                 FieldConfig stakeholderField = new FieldBuilder("Component")
-                        .setMultiValued(',').build();
+                        .setColumn(2).setMultiValued(',').build();
 
                 FieldConfig epicNameField = new FieldBuilder("Epic Name")
                         .setColumn(3).isUnique().build();
@@ -57,6 +57,7 @@ public class BacklogExporter extends ExcelExporter {
                         reporterField).build();
 
                 sheet.addRow(row);
+
                 addSheet(sheet);
             }
         };

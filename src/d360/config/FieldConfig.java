@@ -119,6 +119,10 @@ public class FieldConfig {
     }
 
     /**
+     * Sets the output prefix for the value. If the value is empty (and this is
+     * allowed according to {@link #isBreakOnEmpty()}), the value is NOT
+     * prefixed.
+     * 
      * @param outputPrefix
      *            the outputPrefix to set
      */

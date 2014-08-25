@@ -30,7 +30,8 @@ public class FieldBuilder {
         // Ensure all required fields have been set.
         if (Strings.isNullOrEmpty(f.getValue()) && f.getColumn() < 0) {
             throw new RuntimeException(
-                    "Static value missing and no column index set");
+                    "Static value missing and no column index set for field '"
+                            + f.getLabel() + "'.");
         }
 
         return f;
@@ -48,7 +49,7 @@ public class FieldBuilder {
 
     public FieldBuilder setMultiValued(char delimiter) {
         f.setMultiValued(true, delimiter);
-        return null;
+        return this;
     }
 
 }
