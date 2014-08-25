@@ -1,15 +1,19 @@
 package d360.config;
 
+import com.google.common.base.Strings;
+
 public class FieldBuilder {
     private FieldConfig f;
 
-    public FieldBuilder() {
+    public FieldBuilder(final String label) {
         f = new FieldConfig();
+        f.setLabel(label);
     }
 
-    public FieldBuilder setLabel(String label) {
+    public FieldBuilder(final String label, final String value) {
+        f = new FieldConfig();
         f.setLabel(label);
-        return this;
+        f.setValue(value);
     }
 
     public FieldBuilder setColumn(int column) {
@@ -24,6 +28,11 @@ public class FieldBuilder {
 
     public FieldConfig build() {
         // Ensure all required fields have been set.
+        if (Strings.isNullOrEmpty(f.getValue()) && f.getColumn() < 0) {
+            throw new RuntimeException(
+                    "Static value missing and no column index set");
+        }
+
         return f;
     }
 
@@ -32,14 +41,14 @@ public class FieldBuilder {
         return this;
     }
 
-    public FieldBuilder setValue(String value) {
-        f.setValue(value);
-        return this;
-    }
-
     public FieldBuilder isUnique() {
         f.setUnique(true);
         return this;
+    }
+
+    public FieldBuilder setMultiValued(char delimiter) {
+        f.setMultiValued(true, delimiter);
+        return null;
     }
 
 }

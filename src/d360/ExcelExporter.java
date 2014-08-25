@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,7 +19,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 
@@ -25,6 +30,11 @@ import d360.config.FieldConfig;
 import d360.config.RowConfig;
 import d360.config.SheetConfig;
 
+/**
+ * 
+ * @author Marcus Demnert, @marcusdemnert
+ * 
+ */
 public abstract class ExcelExporter {
 
     private final static Logger LOGGER = Logger.getLogger(ExcelExporter.class
@@ -35,6 +45,11 @@ public abstract class ExcelExporter {
     protected abstract String getInputFileName();
 
     protected abstract Configurator getConfigurator();
+
+    private static final String COLUMN_COUNTER_SEPARATOR = "@@";
+
+    private static final Pattern COLUMN_COUNTER_PATTERN = Pattern
+            .compile("(\\S)" + COLUMN_COUNTER_SEPARATOR + "\\d+");
 
     /**
      * Prettifies the given string be making everything lower case and then
@@ -61,6 +76,23 @@ public abstract class ExcelExporter {
     }
 
     /**
+     * 
+     * @param data
+     * @return
+     */
+    private List<String> getColumns(Set<String> columnNames) {
+        List<String> columnNamesList = Lists.newArrayList(columnNames);
+        for (int index = 0; index < columnNamesList.size(); index++) {
+            String column = columnNamesList.get(index);
+            Matcher m = COLUMN_COUNTER_PATTERN.matcher(column);
+            if (m.matches()) {
+                columnNamesList.set(index, m.group(1));
+            }
+        }
+        return columnNamesList;
+    }
+
+    /**
      * Prints all epics and stories to a file with the given filename.
      * 
      * @param fileName
@@ -72,7 +104,8 @@ public abstract class ExcelExporter {
             throws FileNotFoundException {
         PrintWriter pw = new PrintWriter(fileName);
 
-        String columns = Joiner.on(",").join(data.columnKeySet());
+        String columns = Joiner.on(",").join(getColumns(data.columnKeySet()));
+
         LOGGER.info("Using columns: " + columns);
 
         // Print all headers in the file.
@@ -107,6 +140,12 @@ public abstract class ExcelExporter {
         return "\"" + value + "\"";
     }
 
+    /**
+     * 
+     * @param book
+     * @param sheetConfig
+     * @return
+     */
     private Sheet getSheet(Workbook book, SheetConfig sheetConfig) {
         String sheetName = sheetConfig.getSheetName();
 
@@ -153,6 +192,10 @@ public abstract class ExcelExporter {
                         .getPhysicalNumberOfRows(); rowNo++) {
                     Row row = sheet.getRow(rowNo);
                     for (FieldConfig fieldConfig : rowConfig.getFields()) {
+                        Splitter fieldSplitter = Splitter
+                                .on(CharMatcher.is(fieldConfig
+                                        .getMultiValueDelimiter()))
+                                .trimResults().omitEmptyStrings();
                         String value = fieldConfig.getValue();
                         if (Strings.isNullOrEmpty(value)) {
                             value = getFieldValue(row, fieldConfig);
@@ -167,9 +210,20 @@ public abstract class ExcelExporter {
                                 || !isValueIncludedAlready(cache, rowConfig,
                                         fieldConfig, value);
                         if (isPrintRow) {
-                            data.put(rowCount,
-                                    ampersandify(fieldConfig.getLabel()),
-                                    ampersandify(value));
+                            if (fieldConfig.isMultiValued()) {
+                                int counter = 0;
+                                for (String part : fieldSplitter.split(value)) {
+                                    String label = enumerateColumnName(
+                                            fieldConfig.getLabel(), ++counter);
+                                    data.put(rowCount, ampersandify(label),
+                                            ampersandify(part));
+                                }
+                            }
+                            else {
+                                data.put(rowCount,
+                                        ampersandify(fieldConfig.getLabel()),
+                                        ampersandify(value));
+                            }
                         }
                         else {
                             // Delete all columns for the current row.
@@ -186,6 +240,10 @@ public abstract class ExcelExporter {
             }
         }
         return data;
+    }
+
+    private String enumerateColumnName(String label, int counter) {
+        return label + COLUMN_COUNTER_SEPARATOR + counter;
     }
 
     /**

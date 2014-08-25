@@ -6,6 +6,8 @@ public class FieldConfig {
     private boolean isUnique;
     private boolean isPretty;
     private boolean isBreakOnEmpty;
+    private boolean isMultiValued;
+    private char multiValueDelimiter;
 
     private String label;
     private String value;
@@ -18,6 +20,8 @@ public class FieldConfig {
         column = -1;
         isUnique = false;
         isPretty = true;
+        isMultiValued = false;
+        multiValueDelimiter = 0x00;
         outputPrefix = "";
         forceIntegerOnNumberFields = false;
         label = null;
@@ -134,6 +138,25 @@ public class FieldConfig {
         return isBreakOnEmpty;
     }
 
+    public void setMultiValued(boolean isMultiValued, char delimiter) {
+        this.isMultiValued = isMultiValued;
+        this.multiValueDelimiter = delimiter;
+    }
+
+    /**
+     * @return the isMultiValued
+     */
+    public boolean isMultiValued() {
+        return isMultiValued;
+    }
+
+    /**
+     * @return the multiValueDelimiter
+     */
+    public char getMultiValueDelimiter() {
+        return multiValueDelimiter;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -145,7 +168,9 @@ public class FieldConfig {
         builder.append("FieldConfig [column=").append(column)
                 .append(", isUnique=").append(isUnique).append(", isPretty=")
                 .append(isPretty).append(", isBreakOnEmpty=")
-                .append(isBreakOnEmpty).append(", label=").append(label)
+                .append(isBreakOnEmpty).append(", isMultiValued=")
+                .append(isMultiValued).append(", multiValueDelimiter=")
+                .append(multiValueDelimiter).append(", label=").append(label)
                 .append(", value=").append(value).append(", outputPrefix=")
                 .append(outputPrefix).append(", forceIntegerOnNumberFields=")
                 .append(forceIntegerOnNumberFields).append("]");
@@ -164,9 +189,11 @@ public class FieldConfig {
         result = prime * result + column;
         result = prime * result + (forceIntegerOnNumberFields ? 1231 : 1237);
         result = prime * result + (isBreakOnEmpty ? 1231 : 1237);
+        result = prime * result + (isMultiValued ? 1231 : 1237);
         result = prime * result + (isPretty ? 1231 : 1237);
         result = prime * result + (isUnique ? 1231 : 1237);
         result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + multiValueDelimiter;
         result = prime * result
                 + ((outputPrefix == null) ? 0 : outputPrefix.hashCode());
         result = prime * result + ((value == null) ? 0 : value.hashCode());
@@ -199,6 +226,9 @@ public class FieldConfig {
         if (isBreakOnEmpty != other.isBreakOnEmpty) {
             return false;
         }
+        if (isMultiValued != other.isMultiValued) {
+            return false;
+        }
         if (isPretty != other.isPretty) {
             return false;
         }
@@ -211,6 +241,9 @@ public class FieldConfig {
             }
         }
         else if (!label.equals(other.label)) {
+            return false;
+        }
+        if (multiValueDelimiter != other.multiValueDelimiter) {
             return false;
         }
         if (outputPrefix == null) {

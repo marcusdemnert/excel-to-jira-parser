@@ -25,26 +25,25 @@ public class FunctionsExporter extends ExcelExporter {
 
         return new Configurator() {
             public void configure() {
-                FieldConfig issueTypeField = new FieldBuilder()
-                        .setLabel("Issue Type").setValue("Epic").build();
+                FieldConfig issueTypeField = new FieldBuilder("Issue Type",
+                        "Epic").build();
 
-                FieldConfig summaryField = new FieldBuilder()
-                        .setLabel("Summary").setColumn(3).build();
+                FieldConfig summaryField = new FieldBuilder("Summary")
+                        .setColumn(3).build();
 
-                FieldConfig epicNameField = new FieldBuilder()
-                        .setLabel("Epic Name").setColumn(3).build();
+                FieldConfig epicNameField = new FieldBuilder("Epic Name")
+                        .setColumn(3).build();
 
-                FieldConfig functionalAreaField = new FieldBuilder()
-                        .setLabel("Functional Area").setColumn(2).build();
+                FieldConfig functionalAreaField = new FieldBuilder(
+                        "Functional Area").setColumn(2).build();
 
-                FieldConfig deliveryPackageAreaField = new FieldBuilder()
-                        .setLabel("Delivery Period").setColumn(0)
+                FieldConfig deliveryPackageAreaField = new FieldBuilder(
+                        "Delivery Period").setColumn(0)
                         .forceIntegerOnNumberField().setOutputPrefix("Period ")
                         .build();
 
-                FieldConfig reporterField = new FieldBuilder()
-                        .setLabel("Reporter").setValue("marcus.demnert")
-                        .build();
+                FieldConfig reporterField = new FieldBuilder("Reporter",
+                        "marcus.demnert").build();
 
                 RowConfig row = new RowBuilder().addField(issueTypeField,
                         epicNameField, summaryField, functionalAreaField,
