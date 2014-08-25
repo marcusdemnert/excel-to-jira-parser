@@ -54,12 +54,14 @@ public abstract class ExcelExporter {
     /**
      * Prettifies the given string be making everything lower case and then
      * upper case the first character in each sentence.
-     * 
+     *
      * @param value
      *            the value to prettify.
      * @return the prettified value.
      */
     private String toTitleCase(String value) {
+
+        // Consider using the Guava Splitter instead!
         String[] arr = value.trim().split(" ");
         StringBuffer sb = new StringBuffer();
 
@@ -76,11 +78,13 @@ public abstract class ExcelExporter {
     }
 
     /**
+     * Removes the optional counter part of the stored column name for multi
+     * valued fields.
      * 
      * @param data
      * @return
      */
-    private List<String> getColumns(Set<String> columnNames) {
+    private List<String> removeCounterFromColumnName(Set<String> columnNames) {
         List<String> columnNamesList = Lists.newArrayList(columnNames);
         for (int index = 0; index < columnNamesList.size(); index++) {
             String column = columnNamesList.get(index);
@@ -104,7 +108,8 @@ public abstract class ExcelExporter {
             throws FileNotFoundException {
         PrintWriter pw = new PrintWriter(fileName);
 
-        String columns = Joiner.on(",").join(getColumns(data.columnKeySet()));
+        String columns = Joiner.on(",").join(
+                removeCounterFromColumnName(data.columnKeySet()));
 
         LOGGER.info("Using columns: " + columns);
 
@@ -186,8 +191,8 @@ public abstract class ExcelExporter {
 
             Sheet sheet = getSheet(book, sheetConfig);
 
-            LOGGER.info("Parsing sheet '" + sheet.getSheetName()
-                    + "' using " + sheetConfig);
+            LOGGER.info("Parsing sheet '" + sheet.getSheetName() + "' using "
+                    + sheetConfig);
 
             for (RowConfig rowConfig : sheetConfig.getRows()) {
                 for (int rowNo = sheetConfig.getStartRow(); rowNo < sheet
