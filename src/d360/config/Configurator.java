@@ -14,15 +14,7 @@ public abstract class Configurator {
         defaultSheet = null;
     }
 
-    public abstract void configure();
-
-    public List<SheetConfig> getSheets() {
-        return sheets;
-    }
-
-    public void addSheet(SheetConfig sheet) {
-        sheets.add(sheet);
-    }
+    public abstract List<SheetConfig> configure();
 
     /**
      * @return the defaultSheet

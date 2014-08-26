@@ -1,11 +1,11 @@
 package d360;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import d360.config.Configurator;
-import d360.config.FieldBuilder;
 import d360.config.FieldConfig;
-import d360.config.RowBuilder;
 import d360.config.RowConfig;
-import d360.config.SheetBuilder;
 import d360.config.SheetConfig;
 
 public class BacklogExporter extends ExcelExporter {
@@ -23,42 +23,42 @@ public class BacklogExporter extends ExcelExporter {
     @Override
     protected Configurator getConfigurator() {
         return new Configurator() {
-            public void configure() {
-                // Only one sheet that matters in this file.
-                SheetConfig sheet = new SheetBuilder().setIndex(1)
-                        .setStartRow(2).build();
+            public List<SheetConfig> configure() {
+                List<SheetConfig> sheets = new ArrayList<SheetConfig>();
 
-                FieldConfig issueTypeField = new FieldBuilder("Issue Type",
-                        "Epic").build();
+                FieldConfig issueTypeField = new FieldConfig.Builder(
+                        "Issue Type", "Epic").build();
 
-                FieldConfig summaryField = new FieldBuilder("Summary")
-                        .setColumn(3).build();
+                FieldConfig deliveryPackageAreaField = new FieldConfig.Builder(
+                        "Delivery Period", 0).forceIntegerOnNumberField()
+                        .outputPrefix("Period ").build();
 
-                FieldConfig stakeholderField = new FieldBuilder("Component")
-                        .setColumn(2).setMultiValued(',').build();
+                FieldConfig stakeholderField = new FieldConfig.Builder(
+                        "Component", 2).multiValued(',').build();
 
-                FieldConfig epicNameField = new FieldBuilder("Epic Name")
-                        .setColumn(3).isUnique().build();
-
-                FieldConfig functionalAreaField = new FieldBuilder(
-                        "Functional Area").setColumn(2).build();
-
-                FieldConfig deliveryPackageAreaField = new FieldBuilder(
-                        "Delivery Period").setColumn(0)
-                        .forceIntegerOnNumberField().setOutputPrefix("Period ")
+                FieldConfig summaryField = new FieldConfig.Builder("Summary", 3)
                         .build();
 
-                FieldConfig reporterField = new FieldBuilder("Reporter",
+                FieldConfig epicNameField = new FieldConfig.Builder(
+                        "Epic Name", 3).unique().build();
+
+                FieldConfig functionalAreaField = new FieldConfig.Builder(
+                        "Functional Area", 2).build();
+
+                FieldConfig reporterField = new FieldConfig.Builder("Reporter",
                         "marcus.demnert").build();
 
-                RowConfig row = new RowBuilder().addField(issueTypeField,
+                RowConfig row = new RowConfig.Builder().fields(issueTypeField,
                         epicNameField, summaryField, stakeholderField,
                         functionalAreaField, deliveryPackageAreaField,
                         reporterField).build();
 
-                sheet.addRow(row);
+                // Only one sheet that matters in this file.
+                SheetConfig sheet = new SheetConfig.Builder().index(1)
+                        .startRow(2).rows(row).build();
 
-                addSheet(sheet);
+                sheets.add(sheet);
+                return sheets;
             }
         };
     }

@@ -1,32 +1,38 @@
 package d360.config;
 
+import com.google.common.base.Strings;
+
 public class FieldConfig {
 
+    private String label;
+    private String value;
+    private String outputPrefix;
+
     private int column;
+
     private boolean isUnique;
     private boolean isPretty;
     private boolean isBreakOnEmpty;
     private boolean isMultiValued;
-    private char multiValueDelimiter;
-
-    private String label;
-    private String value;
-
-    private String outputPrefix;
-
     private boolean forceIntegerOnNumberFields;
 
-    protected FieldConfig() {
-        column = -1;
-        isUnique = false;
-        isPretty = true;
-        isMultiValued = false;
-        multiValueDelimiter = 0x00;
-        outputPrefix = "";
-        forceIntegerOnNumberFields = false;
-        label = null;
-        value = "";
-        isBreakOnEmpty = true;
+    private char multiValueDelimiter;
+
+    /**
+     * 
+     * @param b
+     */
+    private FieldConfig(Builder b) {
+        this.column = b.column;
+        this.isUnique = b.isUnique;
+        this.isPretty = b.isPretty;
+        this.isMultiValued = b.isMultiValued;
+        this.multiValueDelimiter = b.multiValueDelimiter;
+        this.outputPrefix = b.outputPrefix;
+        this.forceIntegerOnNumberFields = b.forceIntegerOnNumberFields;
+        this.label = b.label;
+        this.value = b.value;
+        this.isBreakOnEmpty = b.isBreakOnEmpty;
     }
 
     /**
@@ -65,46 +71,6 @@ public class FieldConfig {
     }
 
     /**
-     * @param column
-     *            the column to set
-     */
-    public void setColumn(int column) {
-        this.column = column;
-    }
-
-    /**
-     * @param isUnique
-     *            the isUnique to set
-     */
-    public void setUnique(boolean isUnique) {
-        this.isUnique = isUnique;
-    }
-
-    /**
-     * @param isPretty
-     *            the isPretty to set
-     */
-    public void setPretty(boolean isPretty) {
-        this.isPretty = isPretty;
-    }
-
-    /**
-     * @param label
-     *            the label to set
-     */
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    /**
-     * @param value
-     *            the value to set
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    /**
      * @return the outputPrefix
      */
     public String getOutputPrefix() {
@@ -119,32 +85,11 @@ public class FieldConfig {
     }
 
     /**
-     * Sets the output prefix for the value. If the value is empty (and this is
-     * allowed according to {@link #isBreakOnEmpty()}), the value is NOT
-     * prefixed.
      * 
-     * @param outputPrefix
-     *            the outputPrefix to set
+     * @return
      */
-    public void setOutputPrefix(String outputPrefix) {
-        this.outputPrefix = outputPrefix;
-    }
-
-    /**
-     * @param forceIntegerOnNumberFields
-     *            the forceIntegerOnNumberFields to set
-     */
-    public void setForceIntegerOnNumberFields(boolean forceIntegerOnNumberFields) {
-        this.forceIntegerOnNumberFields = forceIntegerOnNumberFields;
-    }
-
     public boolean isBreakOnEmpty() {
         return isBreakOnEmpty;
-    }
-
-    public void setMultiValued(boolean isMultiValued, char delimiter) {
-        this.isMultiValued = isMultiValued;
-        this.multiValueDelimiter = delimiter;
     }
 
     /**
@@ -159,6 +104,86 @@ public class FieldConfig {
      */
     public char getMultiValueDelimiter() {
         return multiValueDelimiter;
+    }
+
+    /**
+     * 
+     * @author Marcus Demnert, @marcusdemnert
+     * 
+     */
+    public static class Builder {
+        private String label;
+        private String value;
+        private int column;
+        private boolean isUnique;
+        private boolean isPretty;
+        private boolean isBreakOnEmpty;
+        private boolean isMultiValued;
+        private char multiValueDelimiter;
+        private String outputPrefix;
+        private boolean forceIntegerOnNumberFields;
+
+        public Builder(final String label, final int column) {
+            this.label = label;
+            this.column = column;
+            this.isUnique = false;
+            this.isPretty = true;
+            this.isMultiValued = false;
+            this.multiValueDelimiter = 0x00;
+            this.outputPrefix = "";
+            this.forceIntegerOnNumberFields = false;
+            this.label = null;
+            this.value = "";
+            this.isBreakOnEmpty = true;
+        }
+
+        public Builder(final String label, final String value) {
+            this(label, -1);
+            this.value = value;
+        }
+
+        public Builder column(int column) {
+            this.column = column;
+            return this;
+        }
+
+        public Builder forceIntegerOnNumberField() {
+            this.forceIntegerOnNumberFields = true;
+            return this;
+        }
+
+        public Builder outputPrefix(String outputPrefix) {
+            this.outputPrefix = outputPrefix;
+            return this;
+        }
+
+        public Builder breakOnEmpty(boolean isBreakOnEmpty) {
+            this.isBreakOnEmpty = isBreakOnEmpty;
+            return this;
+        }
+
+        public Builder unique() {
+            this.isUnique = true;
+            return this;
+        }
+
+        public Builder multiValued(char multiValueDelimiter) {
+            this.multiValueDelimiter = multiValueDelimiter;
+            this.isMultiValued = true;
+            return this;
+        }
+
+        public FieldConfig build() {
+            // Ensure all required fields have been set.
+            if (Strings.isNullOrEmpty(value) && column < 0) {
+                throw new RuntimeException(
+                        "Static value missing and no column index set for field '"
+                                + label + "'.");
+            }
+
+            return new FieldConfig(this);
+        }
+
     }
 
     /*

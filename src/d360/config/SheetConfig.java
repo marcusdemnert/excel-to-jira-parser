@@ -3,6 +3,9 @@ package d360.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
 public class SheetConfig {
 
     private int startRow;
@@ -11,11 +14,11 @@ public class SheetConfig {
 
     private List<RowConfig> rows;
 
-    protected SheetConfig() {
+    protected SheetConfig(Builder b) {
         rows = new ArrayList<RowConfig>();
-        startRow = 0;
-        sheetName = null;
-        sheetIndex = -1;
+        this.startRow = b.startRow;
+        this.sheetName = b.name;
+        this.sheetIndex = b.index;
     }
 
     /**
@@ -39,36 +42,73 @@ public class SheetConfig {
         return sheetName;
     }
 
-    /**
-     * @param startRow
-     *            the startRow to set
-     */
-    public void setStartRow(int startRow) {
-        this.startRow = startRow;
-    }
-
-    /**
-     * @param sheetIndex
-     *            the sheetIndex to set
-     */
-    public void setSheetIndex(int sheetIndex) {
-        this.sheetIndex = sheetIndex;
-    }
-
-    /**
-     * @param sheetName
-     *            the sheetName to set
-     */
-    public void setSheetName(String sheetName) {
-        this.sheetName = sheetName;
-    }
-
-    public void addRow(RowConfig row) {
-        rows.add(row);
-    }
-
     public List<RowConfig> getRows() {
         return rows;
+    }
+
+    /**
+     * 
+     * @author Marcus Demnert, @marcusdemnert
+     * 
+     */
+    public static class Builder {
+
+        private int startRow;
+        private int index;
+        private String name;
+        private List<RowConfig> rows;
+
+        public Builder() {
+            index = -1;
+            startRow = 0;
+            name = null;
+            rows = new ArrayList<RowConfig>();
+        }
+
+        public Builder startRow(int startRow) {
+            this.startRow = startRow;
+            return this;
+        }
+
+        public Builder index(int index) {
+            this.index = index;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder rows(RowConfig... rows) {
+            this.rows.addAll(Lists.newArrayList(rows));
+            return this;
+        }
+
+        /**
+         * 
+         * @return
+         */
+        public SheetConfig build() {
+            // Validate the sheet: Both index and name not set.
+            if (index == -1 && Strings.isNullOrEmpty(name)) {
+                throw new RuntimeException(
+                        "Sheet index and name cannot both be unset.");
+            }
+
+            // Validate the sheet: Both index and name set.
+            if (index >= 0 && !Strings.isNullOrEmpty(name)) {
+                throw new RuntimeException(
+                        "Sheet index and name cannot both be set.");
+            }
+
+            if (rows.isEmpty()) {
+                throw new RuntimeException("No rows added to this sheet");
+            }
+
+            return new SheetConfig(this);
+        }
+
     }
 
     /*

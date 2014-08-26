@@ -1,6 +1,7 @@
 package d360;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,16 +41,34 @@ public abstract class ExcelExporter {
     private final static Logger LOGGER = Logger.getLogger(ExcelExporter.class
             .getName());
 
+    private static final String COLUMN_COUNTER_SEPARATOR = "@@";
+
+    private static final Pattern COLUMN_COUNTER_PATTERN = Pattern
+            .compile("(\\S)" + COLUMN_COUNTER_SEPARATOR + "\\d+");
+
     protected abstract String getOutputFileName();
 
     protected abstract String getInputFileName();
 
     protected abstract Configurator getConfigurator();
 
-    private static final String COLUMN_COUNTER_SEPARATOR = "@@";
-
-    private static final Pattern COLUMN_COUNTER_PATTERN = Pattern
-            .compile("(\\S)" + COLUMN_COUNTER_SEPARATOR + "\\d+");
+    /**
+     * Gets the workbook to parse.
+     * 
+     * @return the workbook to parse.
+     */
+    protected Workbook getWorkbook() {
+        Workbook book = null;
+        try {
+            book = new XSSFWorkbook(
+                    ExcelExporter.class.getResourceAsStream(getInputFileName()));
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Could not load resource '"
+                    + getInputFileName() + "'", e);
+        }
+        return book;
+    }
 
     /**
      * Prettifies the given string be making everything lower case and then
@@ -116,7 +135,7 @@ public abstract class ExcelExporter {
         // Print all headers in the file.
         pw.println(columns);
 
-        // Print rows
+        // Print rows.
         for (Integer rowNo = 0; rowNo < data.rowKeySet().size(); rowNo++) {
             List<String> rowContents = new ArrayList<String>();
             Map<String, String> rowData = data.row(rowNo);
@@ -179,14 +198,13 @@ public abstract class ExcelExporter {
      * @param book
      *            the Excel Workbook to parse.
      */
-    private Table<Integer, String, String> parse(Workbook book, Configurator c) {
+    private Table<Integer, String, String> parse(Workbook book,
+            List<SheetConfig> sheets) {
 
         Table<Integer, String, String> data = TreeBasedTable.create();
         int rowCount = 0;
 
-        LOGGER.info("Parsing the Excel Workbook using " + c);
-
-        for (SheetConfig sheetConfig : c.getSheets()) {
+        for (SheetConfig sheetConfig : sheets) {
             Map<RowConfig, Map<FieldConfig, String>> cache = new HashMap<RowConfig, Map<FieldConfig, String>>();
 
             Sheet sheet = getSheet(book, sheetConfig);
@@ -216,6 +234,7 @@ public abstract class ExcelExporter {
                         boolean isPrintRow = !fieldConfig.isUnique()
                                 || !isValueIncludedAlready(cache, rowConfig,
                                         fieldConfig, value);
+
                         if (isPrintRow) {
                             if (fieldConfig.isMultiValued()) {
                                 int counter = 0;
@@ -249,6 +268,12 @@ public abstract class ExcelExporter {
         return data;
     }
 
+    /**
+     * 
+     * @param label
+     * @param counter
+     * @return
+     */
     private String enumerateColumnName(String label, int counter) {
         return label + COLUMN_COUNTER_SEPARATOR + counter;
     }
@@ -363,15 +388,14 @@ public abstract class ExcelExporter {
      */
     protected static void export(ExcelExporter exporter) {
         try {
-            Workbook book = new XSSFWorkbook(
-                    ExcelExporter.class.getResourceAsStream(exporter
-                            .getInputFileName()));
+            Workbook book = exporter.getWorkbook();
 
             Configurator configurator = exporter.getConfigurator();
-            configurator.configure();
 
-            Table<Integer, String, String> data = exporter.parse(book,
-                    configurator);
+            LOGGER.info("Parsing the Excel Workbook using " + configurator);
+            List<SheetConfig> sheets = configurator.configure();
+
+            Table<Integer, String, String> data = exporter.parse(book, sheets);
 
             exporter.printFile(data, exporter.getOutputFileName());
         }

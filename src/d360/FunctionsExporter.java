@@ -1,11 +1,11 @@
 package d360;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import d360.config.Configurator;
-import d360.config.FieldBuilder;
 import d360.config.FieldConfig;
-import d360.config.RowBuilder;
 import d360.config.RowConfig;
-import d360.config.SheetBuilder;
 import d360.config.SheetConfig;
 
 public class FunctionsExporter extends ExcelExporter {
@@ -24,36 +24,37 @@ public class FunctionsExporter extends ExcelExporter {
     protected Configurator getConfigurator() {
 
         return new Configurator() {
-            public void configure() {
-                FieldConfig issueTypeField = new FieldBuilder("Issue Type",
-                        "Epic").build();
+            public List<SheetConfig> configure() {
+                List<SheetConfig> sheets = new ArrayList<SheetConfig>();
 
-                FieldConfig summaryField = new FieldBuilder("Summary")
-                        .setColumn(3).build();
+                FieldConfig issueTypeField = new FieldConfig.Builder(
+                        "Issue Type", "Epic").build();
 
-                FieldConfig epicNameField = new FieldBuilder("Epic Name")
-                        .setColumn(3).build();
+                FieldConfig deliveryPackageAreaField = new FieldConfig.Builder(
+                        "Delivery Period", 0).forceIntegerOnNumberField()
+                        .outputPrefix("Period ").build();
 
-                FieldConfig functionalAreaField = new FieldBuilder(
-                        "Functional Area").setColumn(2).build();
+                FieldConfig functionalAreaField = new FieldConfig.Builder(
+                        "Functional Area", 2).build();
 
-                FieldConfig deliveryPackageAreaField = new FieldBuilder(
-                        "Delivery Period").setColumn(0)
-                        .forceIntegerOnNumberField().setOutputPrefix("Period ")
+                FieldConfig summaryField = new FieldConfig.Builder("Summary", 3)
                         .build();
 
-                FieldConfig reporterField = new FieldBuilder("Reporter",
+                FieldConfig epicNameField = new FieldConfig.Builder(
+                        "Epic Name", 3).build();
+
+                FieldConfig reporterField = new FieldConfig.Builder("Reporter",
                         "marcus.demnert").build();
 
-                RowConfig row = new RowBuilder().addField(issueTypeField,
+                RowConfig row = new RowConfig.Builder().fields(issueTypeField,
                         epicNameField, summaryField, functionalAreaField,
                         deliveryPackageAreaField, reporterField).build();
 
-                SheetConfig sheet = new SheetBuilder().setIndex(1)
-                        .setStartRow(2).build();
+                SheetConfig sheet = new SheetConfig.Builder().index(1)
+                        .startRow(2).rows(row).build();
 
-                sheet.addRow(row);
-                addSheet(sheet);
+                sheets.add(sheet);
+                return sheets;
             }
         };
     }
