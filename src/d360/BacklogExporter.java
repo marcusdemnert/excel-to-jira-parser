@@ -40,7 +40,7 @@ public class BacklogExporter extends ExcelExporter {
                         .build();
 
                 FieldConfig epicNameField = new FieldConfig.Builder(
-                        "Epic Name", 3).unique().build();
+                        "Epic Name", 3).unique().ignoreRowOnBlank().build();
 
                 FieldConfig functionalAreaField = new FieldConfig.Builder(
                         "Functional Area", 2).build();

@@ -73,7 +73,7 @@ public abstract class ExcelExporter {
     /**
      * Prettifies the given string be making everything lower case and then
      * upper case the first character in each sentence.
-     *
+     * 
      * @param value
      *            the value to prettify.
      * @return the prettified value.
@@ -226,36 +226,55 @@ public abstract class ExcelExporter {
                             value = getFieldValue(row, fieldConfig);
                         }
 
-                        // If a row contains a field that must be unique, the
-                        // entire row should only be printed if the value is
-                        // unique to the entire dataset for the row.
+                        boolean isDeleteRow = false;
+                        if (Strings.isNullOrEmpty(value)
+                                && fieldConfig.isIgnoreRowOnBlank()) {
+                            isDeleteRow = true;
+                        }
+                        else {
+                            // If a row contains a field that must be unique,
+                            // the entire row should only be printed if the
+                            // value is unique to the entire dataset for the
+                            // row. Only print rows that does not contain unique
+                            // fields.
+                            boolean isPrintRow = !fieldConfig.isUnique()
+                                    || !isValueIncludedAlready(cache,
+                                            rowConfig, fieldConfig, value);
 
-                        // Only print rows that does not contain unique fields.
-                        boolean isPrintRow = !fieldConfig.isUnique()
-                                || !isValueIncludedAlready(cache, rowConfig,
-                                        fieldConfig, value);
-
-                        if (isPrintRow) {
-                            if (fieldConfig.isMultiValued()) {
-                                int counter = 0;
-                                for (String part : fieldSplitter.split(value)) {
-                                    String label = enumerateColumnName(
-                                            fieldConfig.getLabel(), ++counter);
-                                    data.put(rowCount, ampersandify(label),
-                                            ampersandify(part));
+                            if (isPrintRow) {
+                                if (fieldConfig.isMultiValued()) {
+                                    // Field is multi-valued. Split it with
+                                    // given delimiter and enumerate column
+                                    // names before adding it to the data table.
+                                    // The enumeration are removed when printing
+                                    // to file.
+                                    int counter = 0;
+                                    for (String part : fieldSplitter
+                                            .split(value)) {
+                                        String label = enumerateColumnName(
+                                                fieldConfig.getLabel(),
+                                                ++counter);
+                                        data.put(rowCount, ampersandify(label),
+                                                ampersandify(part));
+                                    }
+                                }
+                                else {
+                                    // Field is single valued, add to data
+                                    // table.
+                                    data.put(
+                                            rowCount,
+                                            ampersandify(fieldConfig.getLabel()),
+                                            ampersandify(value));
                                 }
                             }
                             else {
-                                data.put(rowCount,
-                                        ampersandify(fieldConfig.getLabel()),
-                                        ampersandify(value));
+                                isDeleteRow = true;
                             }
                         }
-                        else {
-                            // Delete all columns for the current row.
-                            for (String column : data.columnKeySet()) {
-                                data.remove(rowCount, column);
-                            }
+
+                        if (isDeleteRow) {
+                            // Delete the entire row.
+                            deleteRow(rowCount, data);
                             // Break the fieldConfig loop and continue with the
                             // next row.
                             break;
@@ -266,6 +285,18 @@ public abstract class ExcelExporter {
             }
         }
         return data;
+    }
+
+    /**
+     * 
+     * @param rowCount
+     * @param data
+     */
+    private void deleteRow(int rowCount, Table<Integer, String, String> data) {
+        // Delete all columns for the current row.
+        for (String column : data.columnKeySet()) {
+            data.remove(rowCount, column);
+        }
     }
 
     /**
