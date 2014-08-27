@@ -32,7 +32,7 @@ public class FunctionsExporter extends ExcelExporter {
 
                 FieldConfig deliveryPackageAreaField = new FieldConfig.Builder(
                         "Delivery Period", 0).forceIntegerOnNumberField()
-                        .outputPrefix("Period ").build();
+                        .outputPrefix("Delivery Period ").build();
 
                 FieldConfig functionalAreaField = new FieldConfig.Builder(
                         "Functional Area", 2).build();

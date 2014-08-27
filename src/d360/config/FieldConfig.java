@@ -142,13 +142,14 @@ public class FieldConfig {
         public Builder(final String label, final int column) {
             this.label = label;
             this.column = column;
+
             this.isUnique = false;
             this.isPretty = true;
             this.isMultiValued = false;
             this.multiValueDelimiter = 0x00;
             this.outputPrefix = "";
             this.forceIntegerOnNumberFields = false;
-            this.label = null;
+
             this.value = "";
             this.isBreakOnEmpty = true;
             this.ignoreRowOnBlank = false;

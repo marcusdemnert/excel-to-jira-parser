@@ -135,7 +135,7 @@ public abstract class ExcelExporter {
         // Print all headers in the file.
         pw.println(columns);
 
-        // Print rows.
+        // Print rows in the file.
         for (Integer rowNo = 0; rowNo < data.rowKeySet().size(); rowNo++) {
             List<String> rowContents = new ArrayList<String>();
             Map<String, String> rowData = data.row(rowNo);
@@ -422,9 +422,8 @@ public abstract class ExcelExporter {
             Workbook book = exporter.getWorkbook();
 
             Configurator configurator = exporter.getConfigurator();
-
-            LOGGER.info("Parsing the Excel Workbook using " + configurator);
             List<SheetConfig> sheets = configurator.configure();
+            LOGGER.info("Parsing the Excel Workbook using " + configurator);
 
             Table<Integer, String, String> data = exporter.parse(book, sheets);
 

@@ -15,7 +15,7 @@ public class SheetConfig {
     private List<RowConfig> rows;
 
     protected SheetConfig(Builder b) {
-        rows = new ArrayList<RowConfig>();
+        rows = new ArrayList<RowConfig>(b.rows);
         this.startRow = b.startRow;
         this.sheetName = b.name;
         this.sheetIndex = b.index;
